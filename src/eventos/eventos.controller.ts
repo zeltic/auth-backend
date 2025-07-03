@@ -31,15 +31,21 @@ export class EventosController {
   @Get(':id/materias')
   async getMateriasPorEvento(
     @Param('id', ParseIntPipe) id: number,
-    @Request() req: RequestWithUser, // <-- Tipar el request
+    @Request() req: RequestWithUser,
   ) {
-    const materias = await this.eventosService.getMateriasPorEvento(id);
-    const usuario = await this.usersService.findOne(req.user.userId); // <-- Acceso seguro
+    // Pasamos el ID del usuario al servicio
+    const materias = await this.eventosService.getMateriasPorEvento(
+      id,
+      req.user.userId,
+    );
+    const usuario = await this.usersService.findOne(req.user.userId);
+
     if (!usuario) {
       throw new NotFoundException(
         `Usuario con ID ${req.user.userId} no encontrado.`,
       );
     }
+
     return {
       materias,
       usuarioAcciones: usuario.acciones,

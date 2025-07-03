@@ -33,11 +33,30 @@ export class EventosService {
     return evento;
   }
 
-  async getMateriasPorEvento(eventoId: number) {
-    return this.materiaRepository.find({
+  async getMateriasPorEvento(eventoId: number, usuarioId: number) {
+    // 1. Obtenemos las materias y sus alternativas
+    const materias = await this.materiaRepository.find({
       where: { evento: { codEve: eventoId } },
       relations: ['alternativas'],
     });
+
+    // 2. Para cada materia, buscamos los votos previos del usuario
+    const materiasConVotos = await Promise.all(
+      materias.map(async (materia) => {
+        const votosPrevios = await this.votacionRepository.find({
+          where: {
+            materia: { codMat: materia.codMat },
+            usuario: { id: usuarioId },
+          },
+          relations: ['alternativa'],
+        });
+
+        // Añadimos los votos al objeto de la materia
+        return { ...materia, votosPrevios };
+      }),
+    );
+
+    return materiasConVotos;
   }
 
   async registrarVoto(usuario: User, votarDto: VotarDto) {
