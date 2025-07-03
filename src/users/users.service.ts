@@ -31,7 +31,8 @@ export class UsersService {
   findOne(id: number) {
     return this.usersRepository.findOne({
       where: { id },
-      select: ['id', 'email', 'role'], // No devuelvas password
+      // CAMBIO: Añadimos 'acciones' a la lista de campos seleccionados
+      select: ['id', 'email', 'role', 'acciones'],
     });
   }
 

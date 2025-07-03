@@ -101,12 +101,15 @@ export class EventosService {
   async getResultados(materiaId: number) {
     const resultados = await this.votacionRepository
       .createQueryBuilder('votacion')
-      .select('votacion.alternativaId', 'alternativaId')
+      // CAMBIO: Seleccionamos el ID de la entidad relacionada 'alternativa.codAlt'
+      .select('alternativa.codAlt', 'alternativaId')
       .addSelect('alternativa.nombre', 'alternativaNombre')
       .addSelect('SUM(votacion.accionesAsignadas)', 'totalVotos')
       .innerJoin('votacion.alternativa', 'alternativa')
-      .where('votacion.materiaId = :materiaId', { materiaId })
-      .groupBy('votacion.alternativaId, alternativa.nombre')
+      // CAMBIO: Filtramos por la relación 'votacion.materia' en lugar de 'votacion.materiaId'
+      .where('votacion.materia = :materiaId', { materiaId })
+      // CAMBIO: Agrupamos por los campos seleccionados
+      .groupBy('alternativa.codAlt, alternativa.nombre')
       .getRawMany();
 
     return resultados.map((r) => ({
